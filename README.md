@@ -2,7 +2,7 @@
 
 Utility to copy code to and from remote hosts over SSH.
 
-## What it does
+## ✨ What it does
 
 `git-repo-sync` synchronizes code to and from a remote host over SSH:
 
@@ -14,18 +14,18 @@ Utility to copy code to and from remote hosts over SSH.
 `git-repo-sync` fully supports Linux and macOS. Windows is supported only when
 used as the "local" host, not as a remote.
 
-## Requirements
+## ✅ Requirements
 
 * Git
 * SSH with SFTP support (included by default)
 
-## Install
+## 📦 Install
 
-TODO
+Download the latest release from [GitHub releases](https://github.com/oddity-ai/git-repo-sync/releases) and place it anywhere in your path.
 
-## Usage
+## ℹ️ Usage
 
-### Sync to remote host
+### ⬆️ Sync to remote host
 
 To upload the current directory to a remote location:
 
@@ -48,7 +48,7 @@ git repo-sync up myserver:project
 The above command will sync the current directory to the project directory on
 the remote (in home).
 
-### Sync from remote host to local
+### ⬇️ Sync from remote host to local
 
 To sync the directory from a remote host to the local host:
 
