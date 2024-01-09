@@ -1,0 +1,174 @@
+name: ci
+
+on:
+  push:
+    branches: [ "main" ]
+    tags: [ "v*.*.*" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+
+  test:
+    name: "test"
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@v1
+      with:
+        toolchain: stable
+
+    - name: Cache dependencies
+      uses: Swatinem/rust-cache@v2
+
+    - name: Test
+      run: cargo test --all-features --release
+
+  lint:
+    name: "lint"
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@v1
+      with:
+        toolchain: stable
+        components: rustfmt, clippy
+
+    - name: Cache dependencies
+      uses: Swatinem/rust-cache@v2
+
+    - name: Rustfmt
+      run: cargo fmt --all -- --check
+
+    - name: Clippy
+      run: cargo clippy --all --all-features -- -D warnings
+
+  build-linux:
+    if: startsWith(github.ref, 'refs/tags/v')
+    name: "build / linux"
+    runs-on: "ubuntu-latest"
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@v1
+      with:
+        toolchain: stable
+
+    - name: Cache dependencies
+      uses: Swatinem/rust-cache@v2
+
+    - name: Build
+      run: cargo build --release 
+
+    - name: Upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-linux
+        path: target/release/git-repo-sync
+        retention-days: 1
+        if-no-files-found: error
+
+  build-macos:
+    if: startsWith(github.ref, 'refs/tags/v')
+    name: "build / macos"
+    runs-on: "macos-latest"
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@v1
+      with:
+        toolchain: stable
+
+    - name: Cache dependencies
+      uses: Swatinem/rust-cache@v2
+
+    - name: Build
+      run: cargo build --release
+
+    - name: Upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-macos
+        path: target/release/git-repo-sync
+        retention-days: 1
+        if-no-files-found: error
+
+  build-windows:
+    if: startsWith(github.ref, 'refs/tags/v')
+    name: "build / windows"
+    runs-on: "windows-latest"
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@v1
+      with:
+        toolchain: stable
+
+    - name: Cache dependencies
+      uses: Swatinem/rust-cache@v2
+
+    - name: Build
+      run: cargo build --release 
+
+    - name: Upload
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-windows
+        path: target/release/git-repo-sync.exe
+        retention-days: 1
+        if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    name: "release"
+    needs: 
+      - "lint"
+      - "test"
+      - "build-linux"
+      - "build-macos"
+      - "build-windows"
+    runs-on: "ubuntu-latest"
+
+    env:
+      name_linux: "git-repo-sync-x86_64-linux-${{ github.ref_name }}"
+      name_macos: "git-repo-sync-x86_64-macos-${{ github.ref_name }}"
+      name_windows: "git-repo-sync-x86_64-windows-${{ github.ref_name }}.exe"
+
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
+
+    - name: Organize build files
+      run: |
+        mv "build-linux/git-repo-sync" "${name_linux}"
+        mv "build-macos/git-repo-sync" "${name_macos}"
+        mv "build-windows/git-repo-sync.exe" "${name_windows}"
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          ${{ env.name_linux }}
+          ${{ env.name_macos }}
+          ${{ env.name_windows }}
+

@@ -1,7 +1,5 @@
 # `git-repo-sync`
 
-## About
-
 Utility to copy code to and from remote hosts over SSH.
 
 ## What it does
