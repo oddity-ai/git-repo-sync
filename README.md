@@ -25,6 +25,11 @@ Download the latest release from [GitHub releases](https://github.com/oddity-ai/
 
 ## ℹ️ Usage
 
+> [!WARNING]  
+> There is currently a known issue with `git-repo-sync` that causes it to hang
+> sometimes. If `git-repo-sync` starts hanging when synchronizing many files,
+> just cancel the command and run it again, and it should work.
+
 ### ⬆️ Sync to remote host
 
 To upload the current directory to a remote location:
