@@ -141,8 +141,10 @@ impl Sync {
             .args(["-b", "-"])
             .arg(format!("{remote}"))
             .stdin(std::process::Stdio::piped())
-            .stdout(std::process::Stdio::piped())
-            .stderr(std::process::Stdio::piped())
+            // XXX: Pipe output to /dev/null. Not doing so will cause the stdout to fill up and
+            // SFTP will stack blocking (both stdout and stderr must be piped).
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
             .spawn()
             .context("failed to spawn sftp process")?;
         // XXX: Skipping deleting remote directories! To do it correctly (only remove directories
